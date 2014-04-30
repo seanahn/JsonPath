@@ -123,6 +123,16 @@ public class IssuesTest {
     }
 
     @Test
+    public void issue_chala_string() {
+        String json = "{\"cont.ents\": [\"one\",\"two\",\"three\"]}";
+
+        List<String> result = JsonPath.read(json, "$.cont\\.ents[?(@  == 'two')]");
+
+        assertThat(result, Matchers.contains("two"));
+        assertEquals(1, result.size());
+    }
+
+    @Test
     public void issue_28_int() {
         String json = "{\"contents\": [1,2,3]}";
 

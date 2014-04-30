@@ -118,7 +118,7 @@ public class PathTokenizer implements Iterable<PathToken> {
                     fragments.add(Character.toString(current));
                     poll();
                     break;
-
+                    
                 case '.':
                     poll();
 	                if (!isEmpty() && peek() == '.') {
@@ -137,15 +137,16 @@ public class PathTokenizer implements Iterable<PathToken> {
                     fragments.add(extract(false, '[', '.'));
             }
         }
+
         return fragments;
     }
 
 
     private String extract(boolean includeSopChar, char... stopChars) {
 
-
+        boolean escaped = false;
         StringBuilder sb = new StringBuilder();
-        while (!isEmpty() && (!isStopChar(peek(), stopChars))) {
+        while (!isEmpty() && (!isStopChar(escaped, peek(), stopChars))) {
 
             if (peek() == '(') {
                 do {
@@ -153,16 +154,18 @@ public class PathTokenizer implements Iterable<PathToken> {
                 } while (peek() != ')');
                 sb.append(poll());
             } else {
-
                 char c = poll();
 
-                if (isStopChar(c, stopChars)) {
+                if (isStopChar(escaped, c, stopChars)) {
                     if (includeSopChar) {
                         sb.append(c);
                     }
-                } else {
+                } else if(c != '\\') {
                     sb.append(c);
                 }
+                
+                if(escaped) escaped = false;
+                else if(c == '\\') escaped = true;
             }
         }
         if (includeSopChar) {
@@ -216,14 +219,15 @@ public class PathTokenizer implements Iterable<PathToken> {
         return src;
     }
 
-    private boolean isStopChar(char c, char... scanFor) {
+    private boolean isStopChar(boolean escaped, char c, char... scanFor) {
         boolean found = false;
         for (char check : scanFor) {
-            if (check == c) {
+            if (!escaped && check == c) {
                 found = true;
                 break;
             }
         }
+    	System.out.println("isStopChar " + escaped + ", " + c + " = " + found);
         return found;
     }
 
